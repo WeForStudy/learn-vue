@@ -7,10 +7,10 @@
   <title>Vue-Subscribe-Example</title>
 </head>
 <!-- 
-  通过observe调用defineReactive函数实现set同步
-  1.将data所有的属性走一遍数据劫持（defineReactive)
-  2.劫持set方法，每一次改变都将触发set
-  3.添加input的input监听器，改变vm对应的值
+  在节点为text时新生一个watcher
+  1.在input触发set时触发dep的notify
+  2.触发所有watcher的update
+  3.更新视图
 
  -->
 <body>
@@ -23,7 +23,7 @@
   function Vue (options) {
     this.data = options.data
     var data = this.data
-    observe(data, this) //调用observe方法
+    observe(data, this) // 调用observe方法
     var id = options.el
     var dom = nodeToFragment(document.getElementById(id), this)
     // 编译完成后，将dom返回至app中
@@ -102,16 +102,7 @@
       defineReactive(vm, key, obj[key])
     })
   }
-  Watcher.prototype = {
-    update: function () {
-      this.get()
-      this.node.nodeValue = this.value
-    },
-    get: function () {
-      // 获取data中的值
-      this.value = this.vm[this.name]  // 触发相应属性的get
-    }
-  }
+  
   // ---------------新添的方法
   function Watcher (vm, node, name) {
     console.log(this)
@@ -121,6 +112,16 @@
     this.vm = vm
     this.update()
     Dep.target = null
+  }
+  Watcher.prototype = {
+    update: function () {
+      this.get()
+      this.node.nodeValue = this.value
+    },
+    get: function () {
+      // 获取data中的值
+      this.value = this.vm[this.name]  // 触发相应属性的get
+    }
   }
 
   Dep.prototype = {
