@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Obj的hello例子</title>
+</head>
+<body>
+  <div id="app"></div>
+  <input type="text" id="a">
+  <span id="b"></span>
+  
+</body>
+<script>
+    function init() {
+      var obj = {};
+      // 劫持obj的hello属性，在set上下功夫
+      Object.defineProperty(obj, 'hello', {
+        set: function (newVal = '') {
+          document.getElementById('a').value = newVal;
+          document.getElementById('b').innerHTML = newVal;
+        }
+      })
+      document.getElementById('a').addEventListener('input', function(e) {
+        obj.hello = e.target.value
+      })
+    }
+    init()
+</script>
+</html>
