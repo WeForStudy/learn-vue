@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document-Fragment-Example</title>
+</head>
+<!-- 
+  DocumentFragment(文档碎片): 可以看作节点容器，可以包含多个子节点
+  ps: 使用DF处理节点时，性能和速度远远优于直接操作DOM(Vue进行编译时，便是劫持所有子节点至DF,处理后再将整体返回插入到挂载目标)
+
+ -->
+<body>
+  <div id="app">
+    <input type="text" id="a">
+    <span id="b"></span>
+  </div>
+</body>
+<script>
+  function init() {
+    var dom = nodeToFragment(document.getElementById('app'))
+    console.log(dom) // 输出
+    document.getElementById('app').appendChild(dom)
+  }
+  function nodeToFragment(node) {
+    var wrapper = document.createDocumentFragment()
+    var  child;
+    while (child = node.firstChild) {
+      wrapper.append(child)
+    }
+    return wrapper
+  }
+  init()
+</script>
+
+</html>

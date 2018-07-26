@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Vue-Observe-Example</title>
+</head>
+<!-- 
+  通过observe调用defineReactive函数实现set同步
+  1.将data所有的属性走一遍数据劫持（defineReactive)
+  2.劫持set方法，每一次改变都将触发set
+  3.添加input的input监听器，改变vm对应的值
+
+ -->
+<body>
+  <div id="app">
+    <input type="text" v-model="text" >
+    {{ text }}
+  </div>
+</body>
+<script>
+  function Vue (options) {
+    this.data = options.data
+    var data = this.data
+
+    observe(data, this) // -----------------调用observe方法
+    
+    var id = options.el
+    var dom = nodeToFragment(document.getElementById(id), this)
+    // 编译完成后，将dom返回至app中
+    document.getElementById(id).appendChild(dom)
+  }
+  var vm = new Vue({
+    el: 'app',
+    data: {
+      text: 'hello world'
+    }
+  })
+  function compile(node, vm) {
+    console.log(vm)
+    var reg = /\{\{(.*)\}\}/ // 正则表达式匹配{{}}
+    // 节点类型为元素
+    if (node.nodeType === 1) {
+      var attr = node.attributes
+      for (var i = 0; i < attr.length; i ++) {
+        // 如果找到属性为v-model的指令时
+        if (attr[i].nodeName === 'v-model') {
+          // 获取属性值
+          var name = attr[i].nodeValue
+
+          // ----------------对input进行事件绑定
+          node.addEventListener('input', function (e) {
+            vm[name] = e.target.value
+          })
+          node.value = vm[name] 
+
+
+          // 获取vm里的data对应的值
+          // node.value = vm.data[name]
+          // 移除v-model属性
+          node.removeAttribute('v-model')
+        }
+      }
+    }
+    // 节点类型为text
+    if (node.nodeType === 3) {
+      if (reg.test(node.nodeValue)) {
+        var name = RegExp.$1 // 获取匹配到的字符串
+        name = name.trim() // 去除两头空白字符
+
+        node.nodeValue = vm[name] // -----------将data的值赋给该node
+
+
+        // node.nodeValue = vm.data[name]
+      }
+    }
+  }
+  function nodeToFragment(node, vm) {
+    var wrapper = document.createDocumentFragment()
+    var  child;
+    while (child = node.firstChild) {
+      compile(child, vm)
+      wrapper.append(child)
+    }
+    return wrapper
+  }
+
+  // 新添的方法
+  function defineReactive (obj, key, val) {
+    Object.defineProperty(obj, key, {
+      get: function () {
+        return val
+      },
+      set: function (newVal) {
+        if (newVal === val) return
+        val = newVal
+        console.log(val) // easy to analysis
+      }
+    })
+  }
+
+  function observe (obj, vm) {
+    Object.keys(obj).forEach(function (key) {
+      defineReactive(vm, key, obj[key])
+    })
+  }
+</script>
+</html>
